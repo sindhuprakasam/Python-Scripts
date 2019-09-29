@@ -17,7 +17,13 @@ warnings.filterwarnings("ignore")
 
 
 class GenerateReport():
+    """
+    Main class to generate report
+    """
     def __init__(self):
+        """
+        Set initial values
+        """
         self.day1_flag = 0
         self.sep_flag = 0
         self.flag2 = 1
@@ -45,6 +51,9 @@ class GenerateReport():
             self.all_data_vw = pd.DataFrame()
 
     def get_type_group(self, grp_name, ids_flag=0):
+        """
+        Split the data according to the Type.
+        """
         if ids_flag == 1:
             data = self.data.loc[self.data['ID'].isin(self.ids.tolist())]
         else:
@@ -71,6 +80,11 @@ class GenerateReport():
         return no_flag
 
     def find_trace_down(self, grp_data):
+        """
+        This method is to calculate a output column
+        :param grp_data: input data for a particular group
+        :return: calculated trace down value
+        """
         trc_dwn = []
         trc_dwn_fn = []
         for ind, row in grp_data.iterrows():
@@ -83,6 +97,9 @@ class GenerateReport():
         return trc_dwn, trc_dwn_fn
 
     def gen_excel(self, ids_flag=0, ids_file=0):
+        """
+        Calculate all the output column values for the report.
+        """
         if ids_flag == 1:
             print("for ids report")
             ids_flag_list = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -228,6 +245,9 @@ class GenerateReport():
         self.save_df(self.save_del_week, 'delta_week.pkl', ids_file, dw_s)
 
     def save_df(self, curr_data, file_nm, ids_file, prev_data=None):
+        """
+        Saving the dataframe for next day/future
+        """
         if ids_file != 0:
             file_nm = file_nm[:-4] + "_" + ids_file + file_nm[-4:]
         print(file_nm)
@@ -244,6 +264,9 @@ class GenerateReport():
             fnl_data.to_pickle(file_nm)
 
     def get_prev_delta_week(self, id_num, date, p_data):
+        """
+        Reading previous week's data from pickle files.
+        """
         if date.weekday() == 0:
             yes_data = p_data[(p_data['id'] == id_num)]
             yes_data = yes_data[(yes_data['date'] == str(date-timedelta(days=3))[:10])]
@@ -254,6 +277,9 @@ class GenerateReport():
         return yes_data['total'].tolist()[0], yes_data['week'].tolist()[0]
 
     def create_delta_week(self, col_nm):
+        """
+        Creating delta value with current and previous day's numbers.
+        """
         print(col_nm[0])
         grp_data = self.delta_data
         if self.up_report == 1:
@@ -289,6 +315,9 @@ class GenerateReport():
         return 1
 
     def fetch_grp3_data(self, data, id, ids_flag):
+        """
+        To calculate output data values for a different group. 
+        """
         if data is None:
             res = pd.DataFrame(columns=['date', 'id', 'Doc ID', 'Total (functional / nonfunctional)', 'Req Evaluated', 'in_Trace-down', 'type'])
             return res
@@ -335,12 +364,18 @@ class GenerateReport():
         return grp_res
 
     def get_summary(self, all_ids, look_data=None):
+        """
+        Getting the summary data for all the metrics
+        """
         sumry = []
         for id in all_ids:
             sumry.append(look_data[look_data['id'] == id]['summary'].tolist()[0])
         return sumry
 
     def write_data_excel(self, data, ids_flag, ids_file, gnm):
+        """
+        Writing all the required output values to excel sheets.
+        """
         if self.day1_flag == 1 or (self.up_report == 1):
             all_df = data
         else:
