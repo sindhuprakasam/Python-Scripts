@@ -24,7 +24,7 @@ class GenerateReport():
         self.ids_day1 = 0
         self.up_report = 0
         self.proj_spe = 0
-        self.data = pd.read_csv(r"C:\Users\Sindhu\Documents\PE_Work\report_gen\update\FE6SL_RM-KPI_07-04-2019_0700am.csv")
+        self.data = pd.read_csv(r"path_to_input_csv_file.csv")
         d = self.data['Report Run Date'][0]
         self.date = datetime.datetime.strptime(d[:10], '%d.%m.%Y')
         if self.day1_flag != 1:
@@ -88,20 +88,14 @@ class GenerateReport():
             ids_flag_list = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
             if ids_file == 'vw':
                 self.writer = pd.ExcelWriter('mbsp_report_vw.xlsx', engine='xlsxwriter')
-
-                # Commented this for RQTF Scope on feb 15, 2019.
-                #ids_excel = pd.read_excel(r"C:\Users\Sindhu\Documents\PE_Work\report_gen\update\MBSP_Reprt_VW_Scope_Aligned_with_Johannes.xlsx")
-                #ids_excel = ids_excel.loc[~ids_excel['Relevance VW'].isin(['-', 'no relevance VW', 'no relevance'])]
-                # self.ids = ids_excel['Doc ID']
-
-                ids_excel = pd.read_excel(r"C:\Users\Sindhu\Documents\PE_Work\report_gen\update\RQTF_scope.xlsx")
+                ids_excel = pd.read_excel(r"path_to_ID_list.xlsx")
                 ids_excel = ids_excel.loc[ids_excel['Relevance'].isin(['in VW scope'])]
                 self.ids = ids_excel['ID']
                 self.ids.dropna(inplace=True)
                 self.ids = self.ids.astype(int)
             else:
                 self.writer = pd.ExcelWriter('mbsp_report_man.xlsx', engine='xlsxwriter')
-                self.ids = pd.read_excel(r"C:\Users\Sindhu\Documents\PE_Work\report_gen\man_documents.xls")
+                self.ids = pd.read_excel(r"path_to_doc_IDs.xls")
         else:
             ids_flag_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             self.writer = pd.ExcelWriter('mbsp_report.xlsx', engine='xlsxwriter')
@@ -116,8 +110,6 @@ class GenerateReport():
         dtl_rep.rename(columns={'Project': 'Project Name', 'ID': 'Document ID', 'Summary': 'Name of the Document', 'Total number of requirements': 'Total relevant [IN - tbd,on hold,agreed,conditionally agreed], [RQ/SP -Created, Specified, Accepted, Completed]', 'Specified Requirements': 'Specified [RQ/SP], on hold [IN]', 'Accepted  Requirements': 'Accepted / Completed [RQ/SP], Ageed/Cond. [IN]', 'Deleted Requirements': 'deleted [RQ,SP] / "n/a" [RQ,SP,IN]', 'Req upstream traceability count-Decomposed From" / "Defined By""': 'Trace-up', 'Req test traceability count': 'Test Trace', 'Req test pass count': 'Test Pass', 'Req upstream traceability count-Decomposed From" / "Defined By" (Functional)"': 'Trace Up (functional)'}, inplace=True)
 
         created = list(map(lambda a, b, c: a-(b+c), self.grp['Total number of requirements'].tolist(), self.grp['Specified Requirements'].tolist(), self.grp['Accepted  Requirements'].tolist()))
-        #trace_down = list(map(lambda a, b: a+b, self.grp['Acc Req downstream traceability count-Decomposes To""'].tolist(), self.grp['Acc Req downstream traceability count-Satisfied By" / "Modelled By""'].tolist()))
-        #trace_down_func = list(map(lambda a, b: a+b, self.grp['Acc Req downstream traceability count-Decomposes To" (Functional)"'].tolist(), self.grp['Acc Req downstream traceability count-Satisfied By" / "Modelled By"(Functional)"'].tolist()))
         total = list(map(lambda a, b: a+b, self.grp['Total number of requirements'], self.grp['Rejected Requirements']))
 
         trace_down, trace_down_func = self.find_trace_down(self.grp)
@@ -194,12 +186,6 @@ class GenerateReport():
             d = datetime.datetime.strptime(date[:10], '%Y-%M-%d').date()
             sht_nm = 'DR-Day' + str(d.weekday()+1)
             sht_nm = 'DR-Day0' if (date[:10] == str(self.date-timedelta(days=(self.date.weekday()+3)))[:10]) else sht_nm
-            print(date, d.weekday(), sht_nm)
-            sht_nm = 'DR-Day1' if date in ['2018-12-03', '2018-12-10', '2018-12-17', '2018-12-24'] else sht_nm
-            sht_nm = 'DR-Day2' if date in ['2018-12-04', '2018-12-11', '2018-12-18', '2018-12-25'] else sht_nm
-            sht_nm = 'DR-Day3' if date in ['2018-11-28', '2018-12-05', '2018-12-12', '2018-12-19', '2018-12-26'] else sht_nm
-            sht_nm = 'DR-Day4' if date in ['2018-11-29', '2018-12-06', '2018-12-13', '2018-12-20', '2018-12-27'] else sht_nm
-            sht_nm = 'DR-Day5' if date in ['2018-12-14', '2018-12-21', '2018-12-28'] else sht_nm
 
             day_data.drop(['date'], axis=1, inplace=True)
             day_data = day_data[['Report Run Date', 'Project Name', 'Document ID', 'WABCO Type', 'Name of the Document', 'Total', 'Total relevant [IN - tbd,on hold,agreed,conditionally agreed], [RQ/SP -Created, Specified, Accepted, Completed]','Created [REQ/SP], tbd [IN]' ,
@@ -220,8 +206,8 @@ class GenerateReport():
         out_file = 'mbsp_report.xlsx'
         if ids_flag == 1:
             out_file = 'mbsp_report_vw.xlsx' if ids_file == 'vw' else 'mbsp_report_man.xlsx'
-        wb1 = xl.Workbooks.Open(Filename='C:\\Users\\Sindhu\\Documents\\PE_Work\\report_gen\\update\\mbsp_help.xlsx')
-        wb2 = xl.Workbooks.Open(Filename='C:\\Users\\Sindhu\\Documents\\PE_Work\\report_gen\\update\\' + out_file)
+        wb1 = xl.Workbooks.Open(Filename='mbsp_help.xlsx')
+        wb2 = xl.Workbooks.Open(Filename='\\' + out_file)
 
         sheet_num = len(all_dates) + 2
         ws1 = wb1.Worksheets(1)
@@ -259,14 +245,10 @@ class GenerateReport():
 
     def get_prev_delta_week(self, id_num, date, p_data):
         if date.weekday() == 0:
-            #print("p_data")
-            #print(p_data['date'].unique())
             yes_data = p_data[(p_data['id'] == id_num)]
             yes_data = yes_data[(yes_data['date'] == str(date-timedelta(days=3))[:10])]
         else:
             yes_data = p_data[(p_data['id'] == id_num) & (p_data['date'] == str(date-timedelta(days=1))[:10])]
-        #print("Yes data")
-        #print(yes_data)
         int_cols = ['id', 'total', 'delta', 'week']
         yes_data[int_cols] = yes_data[int_cols].astype(int)
         return yes_data['total'].tolist()[0], yes_data['week'].tolist()[0]
